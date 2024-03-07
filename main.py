@@ -131,6 +131,22 @@ async def analyze(req: Request):
     return None
 
 
+# test health
+@app.get("/ping")
+async def health(req: Request):
+    return "hehe you found me"
+
+
+# test receive single json review payload
+@app.post("/testReviewPayload")
+async def testReviewPayload(req: Request):
+    data = await req.json()
+    print(data)
+    # print(f"Received {data.length()} reviews ...")
+    # if data.length() > 0:
+    # print(f"First review: {data[0]}")
+
+
 @app.get("/summary")
 async def summary():
     summary = {
