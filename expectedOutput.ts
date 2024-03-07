@@ -1,23 +1,8 @@
 const reviews = [
   {
-    sentiment: "postive", // metric we analyze review on
-    delivery: "0.5",
-    product: "0.9",
-    tags: ["delivery"], // tags
-    time: "",
-  },
-  {
-    sentiment: "negative",
-    delivery: "0.2",
-    product: "0.1",
-    tags: ["delivery", "speed"],
-    time: "",
-  },
-  {
-    sentiment: "postive",
-    delivery: "0.3",
-    product: "0.5",
-    tags: ["delivery"],
-    time: "",
+    sentiment: "postive/negative",
+    emotion: "sad/happy",
+    tags: ["N1", "N2"],
+    score: 0.5, // out of google review
   },
 ];

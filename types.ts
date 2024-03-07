@@ -46,7 +46,7 @@ export interface Pokedex {
   hotelAds: any[];
   popularTimesLiveText: string;
   popularTimesLivePercent: number;
-  popularTimesHistogram: PopularTimesHistogram;
+  popularTimesHistogram: PopularTimesHistogram; // shop specific. ignore when processing each review.
   openingHours: OpeningHour[];
   peopleAlsoSearch: PeopleAlsoSearch[];
   placesTags: any[];
