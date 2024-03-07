@@ -132,3 +132,9 @@ dist
 dataset.json
 venv
 __pycache__/
+
+UiClient/*
+!UiClient/UI.py
+!UiClient/requirements.txt
+
+.DS_Store
