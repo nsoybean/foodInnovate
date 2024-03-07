@@ -59,7 +59,7 @@ async def analyze(req: Request):
 
     return None
 
-@app.get("health")
+@app.get("/health")
 async def health(req:Request):
      return 'ok!'
 
