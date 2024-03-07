@@ -59,9 +59,9 @@ async def analyze(req: Request):
 
     return None
 
-@app.get("/health")
+@app.get("/ping")
 async def health(req:Request):
-     return 'ok!'
+     return 'hehe you found me'
 
 @app.post("/clear")
 async def clear():
