@@ -161,6 +161,7 @@ async def summary():
             "neutral": 0,
         },
         "tags": {},
+        "wordCloud": {},
     }
     with conn.cursor() as cur:
         cur.execute("SELECT * FROM review")
@@ -191,6 +192,15 @@ async def summary():
                     summary["tags"][tag] += 1
                 else:
                     summary["tags"][tag] = 1
+
+            words = text.split(" ")
+            for word in words:
+                word = word.lower().replace(",", "").replace(".", "")
+                if len(word) > 3:
+                    if word in summary["wordCloud"]:
+                        summary["wordCloud"][word] += 1
+                    else:
+                        summary["wordCloud"][word] = 1
 
     return JSONResponse(content=summary)
 
@@ -229,11 +239,11 @@ def analyze_review(review):
     - Is the customer talking about social responsibility? yes or no // socialResponsibility
     - Is the customer talking about his/her love for the brand? yes or no // brandLove
 
-    Please output as JSON object using the following format:
+    Please reply in English and output as JSON object using the following format:
     {
       "reviewSentiment": "",
       "emotion": "",
-      "qualityOfFoodBeverage": "", 
+      "qualityOfFoodBeverage": "",
       "valueForMoney": "",
       "customerService": "",
       "safetyAndHygiene": "",
@@ -263,16 +273,16 @@ def analyze_review(review):
     response = result.json()["response"]
     response = response.replace("```json", "")
     response = response.replace("```", "")
-    pos = response.find("}")
-    if pos >= 0:
-        response = response[: pos + 1]
-    print(response)
+    start = response.find("{")
+    end = response.find("}")
+    response = response[start : end + 1]
     results = json.loads(response)
 
     yes_no_mappings = {
         "yes": "yes",
         "good": "yes",
         "positive": "yes",
+        "very positive": "yes",
         "excellent": "yes",
         "affordable": "yes",
         "highly recommended": "yes",
