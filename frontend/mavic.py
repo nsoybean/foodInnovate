@@ -11,7 +11,8 @@ from collections import Counter
 import requests
 import json
 
-API_URL = "8.222.140.205:8000"
+# API_URL = "8.222.140.205:8000"
+API_URL = "0.0.0.0:8000"
 # global variable to store json data in memory
 jsonData = None
 
@@ -189,10 +190,14 @@ if st.button('Test /ping'):
     response = requests.get(f"http://{API_URL}/ping") 
     st.write(f"server said: {response.json()}")
 
-if st.button('Test send server 1 json'):
+
+number = st.number_input("Choose number of reviews to analyze", value=1, placeholder="Number of reviews")
+if st.button('Test send server'):
     reviewData = getJsonData()
     if reviewData is None:
         st.error("Missing JSON data. Please upload one to begin.") 
         st.stop()
     headers = {'Content-type': 'application/json'}
-    response = requests.post(f"http://{API_URL}/testReviewPayload", data=reviewData[0],headers=headers) 
+    response = requests.post(f"http://{API_URL}/testReviewPayload", json=reviewData[:number],headers=headers) 
+    if response.json():
+        st.write(f"server said: {response.json()}")
