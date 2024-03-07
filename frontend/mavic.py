@@ -75,20 +75,23 @@ def plot_metric_distribution(df, column_name, chart_title):
             data = df[column_name].value_counts().reset_index()
             data.columns = [column_name, "Counts"]
 
-        # Use Plotly Express to create the bar chart
-        fig = px.bar(
-            data,
-            x="Counts",
-            y=column_name,
-            orientation="h",
-            title=chart_title,
-            labels={"Counts": "Counts", column_name: column_name.capitalize()},
-            color="Counts",
-            color_continuous_scale=px.colors.sequential.Viridis,
-        )
+        # pie chart
+        pieChart = px.pie( data, values='Counts', names=column_name, hole=.3, title=chart_title)
+        st.plotly_chart(pieChart, use_container_width=True)
 
-        fig.update_layout(xaxis_title="Counts", yaxis_title=column_name.capitalize())
-        st.plotly_chart(fig, use_container_width=True)
+        # Use Plotly Express to create the bar chart
+        # fig = px.bar(
+        #     data,
+        #     x="Counts",
+        #     y=column_name,
+        #     orientation="h",
+        #     title=chart_title,
+        #     labels={"Counts": "Counts", column_name: column_name.capitalize()},
+        #     color="Counts",
+        #     color_continuous_scale=px.colors.sequential.Viridis,
+        # )
+        # fig.update_layout(xaxis_title="Counts", yaxis_title=column_name.capitalize())
+        # st.plotly_chart(fig, use_container_width=True)
     else:
         st.error(
             f"The specified column '{column_name}' does not exist in the DataFrame."
