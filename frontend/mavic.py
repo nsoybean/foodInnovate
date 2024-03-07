@@ -199,3 +199,5 @@ if st.button('Test send server'):
         st.stop()
     headers = {'Content-type': 'application/json'}
     response = requests.post(f"http://{API_URL}/testReviewPayload", json=reviewData[:number],headers=headers) 
+    if response.json():
+        st.write(f"server said: {response.json()}")
