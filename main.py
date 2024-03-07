@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import psycopg2
 import requests
 from fastapi import FastAPI, Request
@@ -38,7 +39,7 @@ async def analyze(req: Request):
         score = review["totalScore"]
         stars = review["stars"]
         date = datetime.fromisoformat(review["publishedAtDate"])
-        sentiment = ""
+        sentiment = results["sentiment"]
         emotion = ""
         gender = ""
         name = ""
@@ -62,10 +63,30 @@ async def clear():
 
 
 def analyze_review(review):
+    text = review["text"]
+
+    prompt = (
+        """
+    These are customer reviews about Yakun delimited by ###:
+    ###
+    %s
+    ###
+
+    Act like a data analyst and complete the following action for the above review:
+    1. Analyze the review sentiment and select from these options: Good, neutral, bad // reviewSentiment
+
+    Please output as JSON object using the following format:
+    {
+      "reviewSentiment": ""
+    }
+    """
+        % text
+    )
+
     result = requests.post(
         "http://quickstart-20240307-w5py.5531209519297534.ap-southeast-1.pai-eas.aliyuncs.com/",
         data={
-            "prompt": "List the largest islands which begin with letter 's'.",
+            "prompt": prompt,
             "system_prompt": "",
             "top_k": 1,
             "top_p": 0.9,
@@ -78,9 +99,20 @@ def analyze_review(review):
             "Authorization": "NGUxOGFhODhmMGIyOTZiNzkzNWUzNzE2MzQzNzk5OWMwMGViYzY2NA=="
         },
     )
-    response = result.json()
+    response = result.json()["response"]
+    response = response.replace("```json", "")
+    response = response.replace("```", "")
+    results = json.loads(response)
 
-    return {}
+    sentiment = ""
+    if "reviewSentiment" in results:
+        sentiment = results["reviewSentiment"]
+    elif "review_sentiment" in results:
+        sentiment = results["review_sentiment"]
+
+    sentiment = sentiment.lower()
+
+    return {"sentiment": sentiment}
 
 
 def main():
