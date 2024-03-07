@@ -8,6 +8,19 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 from itertools import chain, cycle
 from collections import Counter
+import requests
+import json
+
+API_URL = "8.222.140.205:8000"
+# global variable to store json data in memory
+jsonData = None
+
+def getJsonData():
+    if jsonData is None:
+        return None
+    else: 
+        return jsonData
+
 
 st.title("Mavic: Where Data Meets Strategy.")
 
@@ -110,8 +123,17 @@ def display_qualitative_insights(prompt_response):
 
 uploaded_file = st.file_uploader("Choose a file")
 
-# if uploaded_file is not None:
-# bytes_data = uploaded_file.getvalue()
+if uploaded_file is not None:
+    try:
+        # Read JSON file
+        jsonData = json.load(uploaded_file)
+        on = st.toggle('Preview JSON data', False)
+        if on:
+            if uploaded_file is not None:
+                st.write(jsonData[0])
+    except json.JSONDecodeError:
+        st.error("Invalid JSON file. Please upload a valid JSON file.")
+
 
 industry_options = ("F&B", "E-commerce")
 option = st.selectbox(
@@ -122,6 +144,8 @@ option = st.selectbox(
 )
 
 st.write(option)
+
+
 
 
 if st.button("Generate Insights"):
@@ -156,3 +180,17 @@ if st.button("Generate Insights"):
                     ],
                 }
                 display_qualitative_insights(example_prompt_response)
+
+
+
+st.divider()
+st.write('Developers Only')
+if st.button('Test /ping'):
+    response = requests.get(f"http://{API_URL}/ping") 
+    st.write(f"server said: {response.json()}")
+
+if st.button('Test send server 1 json'):
+    reviewData = getJsonData()
+    if reviewData is None:
+        st.error("Missing JSON data. Please upload one to begin.") 
+    response = requests.post(f"http://{API_URL}/testReviewPayload", data=reviewData[0]) 
