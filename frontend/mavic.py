@@ -193,5 +193,6 @@ if st.button('Test send server 1 json'):
     reviewData = getJsonData()
     if reviewData is None:
         st.error("Missing JSON data. Please upload one to begin.") 
+        st.stop()
     headers = {'Content-type': 'application/json'}
     response = requests.post(f"http://{API_URL}/testReviewPayload", data=reviewData[0],headers=headers) 
