@@ -59,6 +59,9 @@ async def analyze(req: Request):
 
     return None
 
+@app.get("health")
+async def health(req:Request):
+     return 'ok!'
 
 @app.post("/clear")
 async def clear():
