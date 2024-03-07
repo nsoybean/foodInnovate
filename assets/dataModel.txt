@@ -1,0 +1,9 @@
+review
+id 
+123
+456
+
+
+review data table
+reviewId | data_Key | data_value
+123 | gender | 'male'

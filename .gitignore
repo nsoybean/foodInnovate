@@ -1,0 +1,4 @@
+# created by virtualenv automatically
+UiClient/*
+!UiClient/UI.py
+!UiClient/requirements.txt
