@@ -130,3 +130,9 @@ dist
 .pnp.*
 
 dataset.json
+
+UiClient/*
+!UiClient/UI.py
+!UiClient/requirements.txt
+
+.DS_Store
