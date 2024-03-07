@@ -68,8 +68,7 @@ async def health(req:Request):
 @app.post("/testReviewPayload")
 async def testReviewPayload(req: Request):
     data = await req.json()
-    print(data)
-    # print(f"Received {data.length()} reviews ...")
+    print(f"Received {len(data)} reviews ...")
     # if data.length() > 0:
         # print(f"First review: {data[0]}")
 
