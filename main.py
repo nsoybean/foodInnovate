@@ -14,6 +14,8 @@ DB_HOST = "gp-gs5zw2z27av4l87kuo-master.gpdbmaster.singapore.rds.aliyuncs.com"
 DB_PORT = 5432
 DB_DATABASE = "mavic"
 
+PAI_HOST = "http://quickstart-20240307-w5py.5531209519297534.ap-southeast-1.pai-eas.aliyuncs.com/"
+
 
 conn = psycopg2.connect(
     user=DB_USER,
@@ -33,13 +35,16 @@ async def analyze(req: Request):
 
     for review in reviews:
         # prompt
-        results = analyze_review(review)
+        try:
+            results = analyze_review(review)
+            sentiment = results["sentiment"]
+        except:
+            sentiment = ""
 
         text = review["text"]
         score = review["totalScore"]
         stars = review["stars"]
         date = datetime.fromisoformat(review["publishedAtDate"])
-        sentiment = results["sentiment"]
         emotion = ""
         gender = ""
         name = ""
@@ -63,6 +68,11 @@ async def clear():
 
 
 def analyze_review(review):
+    if not review['text']:
+        return {"sentiment": "", "review_type": ""}
+    
+    print(f'Analyzing {review['text']} ...')
+
     text = review["text"]
 
     prompt = (
@@ -71,20 +81,37 @@ def analyze_review(review):
     ###
     %s
     ###
+    
+    Here is the list of review types delimited by ~~~:
+    ~~~
+    Quality of Food/Beverage
+    Value for Money
+    Staff and Customer Service
+    Operational Efficiency
+    Safety and Hygiene
+    Product Availability
+    Loyalty and Rewards
+    Accessibility and Convenience
+    Social Responsibility
+    Dietary and Inclusivity Options
+    Brand Reputation and Trust
+    ~~~
 
     Act like a data analyst and complete the following action for the above review:
-    1. Analyze the review sentiment and select from these options: Good, neutral, bad // reviewSentiment
+    1. Analyze the review sentiment and select from these options: good, neutral, bad // reviewSentiment
+    2. Assign a review type from the list delimited by ~~~ // reviewType
 
     Please output as JSON object using the following format:
     {
-      "reviewSentiment": ""
+      "reviewSentiment": "",
+      "reviewType": ""
     }
     """
         % text
     )
 
     result = requests.post(
-        "http://quickstart-20240307-w5py.5531209519297534.ap-southeast-1.pai-eas.aliyuncs.com/",
+        PAI_HOST,
         data={
             "prompt": prompt,
             "system_prompt": "",
@@ -110,9 +137,18 @@ def analyze_review(review):
     elif "review_sentiment" in results:
         sentiment = results["review_sentiment"]
 
-    sentiment = sentiment.lower()
+    review_type = ""
+    if "reviewType" in results:
+        review_type = results["reviewType"]
+    elif "review_type" in results:
+        review_type = results["review_type"]
 
-    return {"sentiment": sentiment}
+    sentiment = sentiment.lower()
+    review_type = review_type.lower()
+    print(sentiment)
+    print(review_type)
+
+    return {"sentiment": sentiment, "review_type": review_type}
 
 
 def main():

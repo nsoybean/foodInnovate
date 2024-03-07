@@ -7,7 +7,7 @@ with open("reviews.json") as f:
 
 requests.post(
     "http://localhost:8000/analyze",
-    json={"category": "eCommerce", "reviews": [reviews[0]]},
+    json={"category": "eCommerce", "reviews": reviews},
 )
 
 # requests.post("http://localhost:8000/clear")
