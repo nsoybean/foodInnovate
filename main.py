@@ -74,7 +74,7 @@ def analyze_review(review):
     if not review['text']:
         return {"sentiment": "", "review_type": ""}
     
-    print(f'Analyzing {review['text']} ...')
+    print(f"Analyzing {review['text']} ...")
 
     text = review["text"]
 
