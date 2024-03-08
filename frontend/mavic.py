@@ -207,7 +207,7 @@ if st.button("Generate Insights"):
             tab1, tab2 = st.tabs(["Quantitative Data", "Qualitative Insights"])
             with tab1:
                 # Iterate over all keys in random_data to generate charts
-                for column, data_dict in response.json().items():
+                for column, data_dict in response.json()['summary'].items():
                     chart_title = f"{column.capitalize()} Distribution"
                     # Generate and display plot for each attribute
                     fig = plot_metric_distribution(
@@ -216,18 +216,7 @@ if st.button("Generate Insights"):
                     st.plotly_chart(fig, use_container_width=True)
 
             with tab2:
-                example_prompt_response = {
-                    "insights": [
-                        "Significant mention of customer service quality",
-                        "Product durability concerns",
-                    ],
-                    "detailed_analysis": "Upon reviewing customer feedback, it was observed that customer service quality was consistently praised, while there were several mentions of concerns regarding the durability of the product.",
-                    "recommendations": [
-                        "Investigate product materials for potential improvements",
-                        "Highlight customer service excellence in marketing materials",
-                    ],
-                }
-                display_qualitative_insights(example_prompt_response)
+                st.markdown(response.json()['insights'])
 
 
 
