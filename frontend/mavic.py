@@ -99,17 +99,22 @@ def plot_metric_distribution(df, column_name, chart_title):
     
     # Convert the dictionary into a DataFrame
     data_df = pd.DataFrame(list(df.items()), columns=[column_name, "Counts"])
+    
+    # pie chart
+    pieChart = px.pie( data_df, values='Counts', names=column_name, hole=.3, title=chart_title)
+    return pieChart
+    # st.plotly_chart(pieChart, use_container_width=True)
     # Use Plotly Express to create the bar chart
-    fig = px.bar(
-        data_df,
-        x=column_name,
-        y="Counts",
-        title=chart_title,
-        labels={"Counts": "Counts", column_name: column_name},
-        color=column_name,
-        barmode="group",
-    )
-    fig.update_layout(xaxis_title=column_name, yaxis_title="Counts")
+    # fig = px.bar(
+    #     data_df,
+    #     x=column_name,
+    #     y="Counts",
+    #     title=chart_title,
+    #     labels={"Counts": "Counts", column_name: column_name},
+    #     color=column_name,
+    #     barmode="group",
+    # )
+    # fig.update_layout(xaxis_title=column_name, yaxis_title="Counts")
     return fig  # Ensure this function returns a Plotly Figure object
 
 def display_qualitative_insights(prompt_response):
