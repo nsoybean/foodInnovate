@@ -41,7 +41,7 @@ async def analyze(req: Request):
     await clear()
     count = 0
     data = await req.json()
-    print(f"received {len(data['reviews'])} reviews for industry: {data['industry']}")
+    # print(f"received {len(data['reviews'])} reviews for industry: {data['industry']}")
 
     industry = data["industry"]
     if "url" in data:
