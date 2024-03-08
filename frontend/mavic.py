@@ -162,7 +162,7 @@ if st.button('Analyze!'):
     headers = {'Content-type': 'application/json'}
     
     payloadDict = {
-        "category": option,
+        "industry": option,
         "reviews": jsonData[:number],
     }   
 

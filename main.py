@@ -39,9 +39,9 @@ conn = psycopg2.connect(
 @app.post("/analyze")
 async def analyze(req: Request):
     await clear()
-
+    count = 0
     data = await req.json()
-    print(f"received {len(data['reviews'])} reviews for category: {data['category']}")
+    print(f"received {len(data['reviews'])} reviews for industry: {data['industry']}")
 
     industry = data["industry"]
     if "url" in data:
