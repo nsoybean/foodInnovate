@@ -524,6 +524,8 @@ def analyze_reviews():
     - Give insights of the customer sentiments // sentiments
     - Give insights of the customer emotions // emotions
     - Give insights about the most popular and discussed topic // popularTopic
+    
+    Please output in markdown format for each insights
     """ % (
         summary["sentiment"]["good"],
         summary["sentiment"]["bad"],
