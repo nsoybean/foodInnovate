@@ -170,6 +170,7 @@ async def clear():
 
 
 def scrape_reviews(url, num_reviews=10):
+    print('scrapping reviews...')
     key = url + "_" + str(num_reviews)
     if key in APIFY_CACHE:
         return APIFY_CACHE[key]
