@@ -96,21 +96,21 @@ async def analyze(req: Request):
         gender = ""
         name = review["name"]
         tags = []
-        if quality_of_food_beverage:
+        if quality_of_food_beverage == "yes":
             tags.append("quality_of_food_beverage")
-        if value_for_money:
+        if value_for_money == "yes":
             tags.append("value_for_money")
-        if customer_service:
+        if customer_service == "yes":
             tags.append("customer_service")
-        if safety_and_hygiene:
+        if safety_and_hygiene == "yes":
             tags.append("safety_and_hygiene")
-        if loyalty_and_rewards:
+        if loyalty_and_rewards == "yes":
             tags.append("loyalty_and_rewards")
-        if accessibility_and_convenience:
+        if accessibility_and_convenience == "yes":
             tags.append("accessibility_and_convenience")
-        if social_responsibility:
+        if social_responsibility == "yes":
             tags.append("social_responsibility")
-        if brand_love:
+        if brand_love == "yes":
             tags.append("brand_love")
 
         # insert
