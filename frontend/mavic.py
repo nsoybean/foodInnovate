@@ -62,41 +62,55 @@ def reviews_to_dataframe(reviews):
 
 
 def plot_metric_distribution(df, column_name, chart_title):
-    if column_name in df.columns:
-        data = None
-        # Check if the column contains lists
-        if isinstance(df[column_name].iloc[0], list):
-            # Flatten the list of lists and create a DataFrame for Plotly
-            all_elements = list(chain.from_iterable(df[column_name].dropna()))
-            counts = dict(Counter(all_elements))
-            data = pd.DataFrame(list(counts.items()), columns=[column_name, "Counts"])
-        else:
-            # For non-list columns, calculate the value counts and reset the index to use with Plotly
-            data = df[column_name].value_counts().reset_index()
-            data.columns = [column_name, "Counts"]
+    # if column_name in df.columns:
+    #     data = None
+    #     # Check if the column contains lists
+    #     if isinstance(df[column_name].iloc[0], list):
+    #         # Flatten the list of lists and create a DataFrame for Plotly
+    #         all_elements = list(chain.from_iterable(df[column_name].dropna()))
+    #         counts = dict(Counter(all_elements))
+    #         data = pd.DataFrame(list(counts.items()), columns=[column_name, "Counts"])
+    #     else:
+    #         # For non-list columns, calculate the value counts and reset the index to use with Plotly
+    #         data = df[column_name].value_counts().reset_index()
+    #         data.columns = [column_name, "Counts"]
 
-        # pie chart
-        pieChart = px.pie( data, values='Counts', names=column_name, hole=.3, title=chart_title)
-        st.plotly_chart(pieChart, use_container_width=True)
+    #     # pie chart
+    #     pieChart = px.pie( data, values='Counts', names=column_name, hole=.3, title=chart_title)
+    #     st.plotly_chart(pieChart, use_container_width=True)
 
-        # Use Plotly Express to create the bar chart
-        # fig = px.bar(
-        #     data,
-        #     x="Counts",
-        #     y=column_name,
-        #     orientation="h",
-        #     title=chart_title,
-        #     labels={"Counts": "Counts", column_name: column_name.capitalize()},
-        #     color="Counts",
-        #     color_continuous_scale=px.colors.sequential.Viridis,
-        # )
-        # fig.update_layout(xaxis_title="Counts", yaxis_title=column_name.capitalize())
-        # st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.error(
-            f"The specified column '{column_name}' does not exist in the DataFrame."
-        )
-
+    #     # Use Plotly Express to create the bar chart
+    #     # fig = px.bar(
+    #     #     data,
+    #     #     x="Counts",
+    #     #     y=column_name,
+    #     #     orientation="h",
+    #     #     title=chart_title,
+    #     #     labels={"Counts": "Counts", column_name: column_name.capitalize()},
+    #     #     color="Counts",
+    #     #     color_continuous_scale=px.colors.sequential.Viridis,
+    #     # )
+    #     # fig.update_layout(xaxis_title="Counts", yaxis_title=column_name.capitalize())
+    #     # st.plotly_chart(fig, use_container_width=True)
+    # else:
+    #     st.error(
+    #         f"The specified column '{column_name}' does not exist in the DataFrame."
+    #     )
+    
+    # Convert the dictionary into a DataFrame
+    data_df = pd.DataFrame(list(df.items()), columns=[column_name, "Counts"])
+    # Use Plotly Express to create the bar chart
+    fig = px.bar(
+        data_df,
+        x=column_name,
+        y="Counts",
+        title=chart_title,
+        labels={"Counts": "Counts", column_name: column_name},
+        color=column_name,
+        barmode="group",
+    )
+    fig.update_layout(xaxis_title=column_name, yaxis_title="Counts")
+    return fig  # Ensure this function returns a Plotly Figure object
 
 def display_qualitative_insights(prompt_response):
     markdown_template = """
@@ -174,9 +188,9 @@ if st.button('Analyze!'):
         response = requests.post(f"http://{API_URL}/analyze", json=payloadDict,headers=headers)
 
 
-if st.button('Get insights!'):
-    response = requests.get(f"http://{API_URL}/summary") 
-    st.write(response.json())
+# if st.button('Get insights!'):
+#     response = requests.get(f"http://{API_URL}/summary") 
+#     st.write(response.json())
     # df_reviews = reviews_to_dataframe(response['sentiment'])
     # st.write(f"sentiment: {df_reviews}")
 
@@ -186,33 +200,23 @@ if st.button("Generate Insights"):
         st.warning("Please upload a file or select an industry to continue.")
     else:
         with st.spinner("Generating insights..."):
-            # Simulate processing
-            simulate_processing()
-            # Generate a list of 100 random reviews for demonstration
-            reviews = [generate_random_review() for _ in range(100)]
-            df_reviews = reviews_to_dataframe(reviews)
+            # api call
+            response = requests.get(f"http://{API_URL}/summary") 
+            st.write(response.json())
 
             tab1, tab2 = st.tabs(["Quantitative Data", "Qualitative Insights"])
             with tab1:
-                # Iterate over all columns except 'id' and generate charts
-                for column in df_reviews.columns:
-                    if column != "id":  # Skip the 'id' column
-                        chart_title = f"{column.capitalize()} Distribution"
-                        plot_metric_distribution(df_reviews, column, chart_title)
+                # Iterate over all keys in random_data to generate charts
+                for column, data_dict in response.json()['summary'].items():
+                    chart_title = f"{column.capitalize()} Distribution"
+                    # Generate and display plot for each attribute
+                    fig = plot_metric_distribution(
+                        data_dict, column.capitalize(), chart_title
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
 
             with tab2:
-                example_prompt_response = {
-                    "insights": [
-                        "Significant mention of customer service quality",
-                        "Product durability concerns",
-                    ],
-                    "detailed_analysis": "Upon reviewing customer feedback, it was observed that customer service quality was consistently praised, while there were several mentions of concerns regarding the durability of the product.",
-                    "recommendations": [
-                        "Investigate product materials for potential improvements",
-                        "Highlight customer service excellence in marketing materials",
-                    ],
-                }
-                display_qualitative_insights(example_prompt_response)
+                st.markdown(response.json()['insights'])
 
 
 
