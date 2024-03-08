@@ -207,7 +207,7 @@ if st.button("Generate Insights"):
         with st.spinner("Generating insights..."):
             # api call
             response = requests.get(f"http://{API_URL}/summary") 
-            st.write(response.json())
+            # st.write(response.json())
 
             tab1, tab2 = st.tabs(["Quantitative Data", "Qualitative Insights"])
             with tab1:
@@ -226,12 +226,14 @@ if st.button("Generate Insights"):
 
 
 st.divider()
-st.write('Developers Only')
-if st.button('Test /ping'):
-    response = requests.get(f"http://{API_URL}/ping") 
-    st.write(f"server: {response.json()}")
+devOn = st.toggle('dev', False)
+if devOn:
+    st.write('Developers Only')
+    if st.button('Test /ping'):
+        response = requests.get(f"http://{API_URL}/ping") 
+        st.write(f"server: {response.json()}")
 
 
-if st.button('Clear!'):
-    response = requests.post(f"http://{API_URL}/clear")
-    st.write(f"server: {response.json()}")
+    if st.button('Clear!'):
+        response = requests.post(f"http://{API_URL}/clear")
+        st.write(f"server: {response.json()}")

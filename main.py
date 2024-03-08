@@ -431,6 +431,16 @@ def analyze_reviews():
     print("Analyzing reviews")
 
     summary = {
+        "tags": {
+            "quality_of_food_beverage": 0,
+            "value_for_money": 0,
+            "customer_service": 0,
+            "safety_and_hygiene": 0,
+            "loyalty_and_rewards": 0,
+            "accessibility_and_convenience": 0,
+            "social_responsibility": 0,
+            "brand_love": 0,
+        },
         "sentiment": {
             "good": 0,
             "bad": 0,
@@ -442,16 +452,6 @@ def analyze_reviews():
             "disappointed": 0,
             "sad": 0,
             "neutral": 0,
-        },
-        "tags": {
-            "quality_of_food_beverage": 0,
-            "value_for_money": 0,
-            "customer_service": 0,
-            "safety_and_hygiene": 0,
-            "loyalty_and_rewards": 0,
-            "accessibility_and_convenience": 0,
-            "social_responsibility": 0,
-            "brand_love": 0,
         },
         "wordCloud": {},
     }
