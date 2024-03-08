@@ -45,7 +45,8 @@ async def analyze(req: Request):
 
     industry = data["industry"]
     if "url" in data:
-        reviews = scrape_reviews(data["url"])
+        num_reviews = data["num_reviews"] if "num_reviews" in data else 10
+        reviews = scrape_reviews(data["url"], num_reviews=num_reviews)
     else:
         reviews = data["reviews"]
 
