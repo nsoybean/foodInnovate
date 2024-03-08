@@ -20,9 +20,9 @@ DB_DATABASE = "mavic"
 PAI_HOST = "http://quickstart-20240307-w5py.5531209519297534.ap-southeast-1.pai-eas.aliyuncs.com/"
 PAI_TOKEN = "NGUxOGFhODhmMGIyOTZiNzkzNWUzNzE2MzQzNzk5OWMwMGViYzY2NA=="
 
-# qwen 7B chat
-# PAI_HOST = "http://quickstart-20240308-sh2b.5531209519297534.ap-southeast-1.pai-eas.aliyuncs.com/"
-# PAI_TOKEN = "ZGFmOTVmYzZhYzk5MmFjZDEyNGZiMmNkMTkyNWMxYjA5YjliMzJlMw=="
+# llama2 7B chat
+PAI_HOST_7B = "http://quickstart-20240308-0fsr.5531209519297534.ap-southeast-1.pai-eas.aliyuncs.com/"
+PAI_TOKEN_7B = "YTczOGFhOGMzOWM1NjU0ZGM4NDYyNWZlYWY2NzMyMDM3YTIxNTkyOQ=="
 
 
 app = FastAPI()
@@ -128,7 +128,7 @@ async def analyze(req: Request):
             )
             conn.commit()
 
-    return None
+    return analyze_reviews()
 
 
 # test health
@@ -147,62 +147,8 @@ async def testReviewPayload(req: Request):
 
 @app.get("/summary")
 async def summary():
-    summary = {
-        "sentiment": {
-            "good": 0,
-            "bad": 0,
-            "neutral": 0,
-        },
-        "emotion": {
-            "happy": 0,
-            "angry": 0,
-            "disappointed": 0,
-            "sad": 0,
-            "neutral": 0,
-        },
-        "tags": {},
-        "wordCloud": {},
-    }
-    with conn.cursor() as cur:
-        cur.execute("SELECT * FROM review")
-        reviews = cur.fetchall()
-        for row in reviews:
-            id = row[0]
-            sentiment = row[1]
-            emotion = row[2]
-            name = row[4]
-            text = row[5]
-            score = row[6]
-            stars = row[7]
-            date = row[8]
-            tags = row[9]
-
-            if sentiment in summary["sentiment"]:
-                summary["sentiment"][sentiment] += 1
-            else:
-                summary["sentiment"]["neutral"] += 1
-
-            if emotion in summary["emotion"]:
-                summary["emotion"][emotion] += 1
-            else:
-                summary["emotion"]["neutral"] += 1
-
-            for tag in tags:
-                if tag in summary["tags"]:
-                    summary["tags"][tag] += 1
-                else:
-                    summary["tags"][tag] = 1
-
-            words = text.split(" ")
-            for word in words:
-                word = word.lower().replace(",", "").replace(".", "")
-                if len(word) > 3:
-                    if word in summary["wordCloud"]:
-                        summary["wordCloud"][word] += 1
-                    else:
-                        summary["wordCloud"][word] = 1
-
-    return JSONResponse(content=summary)
+    results = analyze_reviews()
+    return JSONResponse(content=results)
 
 
 @app.post("/clear")
@@ -471,81 +417,145 @@ def analyze_review(industry, review):
     }
 
 
-# def analyze_reviews():
-#     summary = {
-#         "sentiment": {
-#             "good": 0,
-#             "bad": 0,
-#             "neutral": 0,
-#         },
-#         "emotion": {
-#             "happy": 0,
-#             "angry": 0,
-#             "disappointed": 0,
-#             "sad": 0,
-#             "neutral": 0,
-#         },
-#         "tags": {},
-#         "wordCloud": {},
-#     }
-#     with conn.cursor() as cur:
-#         cur.execute("SELECT * FROM review")
-#         reviews = cur.fetchall()
-#         for row in reviews:
-#             id = row[0]
-#             sentiment = row[1]
-#             emotion = row[2]
-#             name = row[4]
-#             text = row[5]
-#             score = row[6]
-#             stars = row[7]
-#             date = row[8]
-#             tags = row[9]
+def analyze_reviews():
+    print("Analyzing reviews")
 
-#             if sentiment in summary["sentiment"]:
-#                 summary["sentiment"][sentiment] += 1
-#             else:
-#                 summary["sentiment"]["neutral"] += 1
+    summary = {
+        "sentiment": {
+            "good": 0,
+            "bad": 0,
+            "neutral": 0,
+        },
+        "emotion": {
+            "happy": 0,
+            "angry": 0,
+            "disappointed": 0,
+            "sad": 0,
+            "neutral": 0,
+        },
+        "tags": {
+            "quality_of_food_beverage": 0,
+            "value_for_money": 0,
+            "customer_service": 0,
+            "safety_and_hygiene": 0,
+            "loyalty_and_rewards": 0,
+            "accessibility_and_convenience": 0,
+            "social_responsibility": 0,
+            "brand_love": 0,
+        },
+        "wordCloud": {},
+    }
+    with conn.cursor() as cur:
+        cur.execute("SELECT * FROM review")
+        reviews = cur.fetchall()
+        for row in reviews:
+            id = row[0]
+            sentiment = row[1]
+            emotion = row[2]
+            name = row[4]
+            text = row[5]
+            score = row[6]
+            stars = row[7]
+            date = row[8]
+            tags = row[9]
 
-#             if emotion in summary["emotion"]:
-#                 summary["emotion"][emotion] += 1
-#             else:
-#                 summary["emotion"]["neutral"] += 1
+            if sentiment in summary["sentiment"]:
+                summary["sentiment"][sentiment] += 1
+            else:
+                summary["sentiment"]["neutral"] += 1
 
-#             for tag in tags:
-#                 if tag in summary["tags"]:
-#                     summary["tags"][tag] += 1
-#                 else:
-#                     summary["tags"][tag] = 1
+            if emotion in summary["emotion"]:
+                summary["emotion"][emotion] += 1
+            else:
+                summary["emotion"]["neutral"] += 1
 
-#             words = text.split(" ")
-#             for word in words:
-#                 word = word.lower().replace(",", "").replace(".", "")
-#                 if len(word) > 3:
-#                     if word in summary["wordCloud"]:
-#                         summary["wordCloud"][word] += 1
-#                     else:
-#                         summary["wordCloud"][word] = 1
+            for tag in tags:
+                if tag in summary["tags"]:
+                    summary["tags"][tag] += 1
+                else:
+                    summary["tags"][tag] = 1
 
-#     prompt = (
-#         """
-#     These are customer reviews about a restaurant chain with their analysis, delimited by ###
-#     ###
-#     %s
-#     ###
+            words = text.split(" ")
+            for word in words:
+                word = word.lower().replace(",", "").replace(".", "")
+                if len(word) > 3:
+                    if word in summary["wordCloud"]:
+                        summary["wordCloud"][word] += 1
+                    else:
+                        summary["wordCloud"][word] = 1
 
-#     Act like a data analyst and follow the instructions below:
-#     - Give an insights of how the resturant chain can improve in  // improvement
+    prompt = """
+    The following is a summary of customer reviews, delimited by ###
+    ###
+    Customers' sentiments:
+    There are %s customers who has good sentiment.
+    There are %s customers who has bad sentiment.
+    There are %s customers who has neutral sentiment.
 
-#     Please reply in English and output as JSON object using the following format:
-#     {
-#       "insights1": ""
-#     }
-#     """
-#         % text
-#     )
+    Customers' emotions:
+    There are %s customers who felt happy emotion.
+    There are %s customers who felt angry emotion.
+    There are %s customers who felt disappointed emotion.
+    There are %s customers who felt sad emotion.
+    There are %s customers who felt neutral emotion.
 
-#     return JSONResponse(content=summary)
+    Most talked topics:
+    There are %s customers who talked about quality of food/beverage.
+    There are %s customers who talked about whether the food is value for money.
+    There are %s customers who talked about customer service.
+    There are %s customers who talked about safety and hygiene.
+    There are %s customers who talked about loyalty and rewards.
+    There are %s customers who talked about accessibility and convenience.
+    There are %s customers who talked about social responsibiility.
+    There are %s customers who talked about their love for the brand.
+    ###
+
+    Act like a data analyst and follow the instructions below:
+    - Give insights of the customer sentiments // sentiments
+    - Give insights of the customer emotions // emotions
+    - Give insights about the most popular and discussed topic // popularTopic
+    """ % (
+        summary["sentiment"]["good"],
+        summary["sentiment"]["bad"],
+        summary["sentiment"]["neutral"],
+        summary["emotion"]["happy"],
+        summary["emotion"]["angry"],
+        summary["emotion"]["disappointed"],
+        summary["emotion"]["sad"],
+        summary["emotion"]["neutral"],
+        summary["tags"]["quality_of_food_beverage"],
+        summary["tags"]["value_for_money"],
+        summary["tags"]["customer_service"],
+        summary["tags"]["safety_and_hygiene"],
+        summary["tags"]["loyalty_and_rewards"],
+        summary["tags"]["accessibility_and_convenience"],
+        summary["tags"]["social_responsibility"],
+        summary["tags"]["brand_love"],
+    )
+
+    result = requests.post(
+        PAI_HOST_7B,
+        data={
+            "prompt": prompt,
+            "system_prompt": "",
+            "top_k": 1,
+            "top_p": 1,
+            "temperature": 1,
+            "max_new_tokens": 4096,
+            "use_stream_chat": False,
+            "history": [["question", "answer"]],
+        },
+        headers={"Authorization": PAI_TOKEN_7B},
+    )
+    insights = result.json()["response"]
+    # response = response.replace("```json", "")
+    # response = response.replace("```", "")
+    # start = response.find("{")
+    # end = response.find("}")
+    # response = response[start : end + 1]
+    # results = json.loads(response)
+
+    return {"summary": summary, "insights": insights}
 
 
 def main():

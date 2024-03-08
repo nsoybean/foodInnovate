@@ -5,10 +5,12 @@ import json
 with open("reviews.json") as f:
     reviews = json.load(f)
 
-requests.post(
+resp = requests.post(
     "http://localhost:8000/analyze",
-    json={"industry": "F&B", "reviews": reviews[0:10]},
+    json={"industry": "F&B", "reviews": reviews[0:5]},
 )
+print(resp.json())
+
 # requests.post(
 #     "http://localhost:8000/analyze",
 #     json={
