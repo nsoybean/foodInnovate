@@ -64,7 +64,7 @@ async def analyze(req: Request):
         social_responsibility = ""
         brand_love = ""
         try:
-            results = analyze_review(review)
+            results = analyze_review(industry, review)
             if results is not None:
                 print(results)
                 sentiment = results["sentiment"]
@@ -242,7 +242,7 @@ def scrape_reviews(url, num_reviews=10):
     return items
 
 
-def analyze_review(review):
+def analyze_review(industry, review):
     if not review["text"]:
         return None
 
@@ -250,9 +250,8 @@ def analyze_review(review):
 
     text = review["text"]
 
-    prompt = (
-        """
-    This is a customer review about a restaurant chain, delimited by ###
+    prompt = """
+    This is a customer review about a shop in the %s industry, delimited by ###
     ###
     %s
     ###
@@ -282,8 +281,9 @@ def analyze_review(review):
       "socialResponsibility": "",
       "brandLove": ""
     }
-    """
-        % text
+    """ % (
+        industry,
+        text,
     )
 
     result = requests.post(
