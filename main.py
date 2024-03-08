@@ -1,3 +1,4 @@
+# from apify_client import ApifyClient
 from datetime import datetime
 import json
 import psycopg2
@@ -6,8 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 
-app = FastAPI()
-
+# APIFY_TOKEN = "apify_api_ATqx4ubArj7TF3UW4HaH9hiFy60bVu30MP9K"
 
 DB_USER = "mavic"
 DB_PASSWORD = "UugwZLn73i3X"
@@ -32,6 +32,8 @@ PAI_TOKEN = "NGUxOGFhODhmMGIyOTZiNzkzNWUzNzE2MzQzNzk5OWMwMGViYzY2NA=="
 # PAI_TOKEN = "MDQ4YmQ4YTA5ODQxODQ3NDljNjFlNDRjMDRkNGQyNDFmMTFiZjBiZQ=="
 
 
+app = FastAPI()
+
 conn = psycopg2.connect(
     user=DB_USER,
     password=DB_PASSWORD,
@@ -43,9 +45,11 @@ conn = psycopg2.connect(
 
 @app.post("/analyze")
 async def analyze(req: Request):
+    clear()
+
     data = await req.json()
 
-    category = data["category"]
+    industry = data["industry"]
     reviews = data["reviews"]
 
     for review in reviews:
@@ -210,6 +214,27 @@ async def clear():
     with conn.cursor() as cur:
         cur.execute("DELETE FROM review")
         conn.commit()
+
+
+# def scrape_reviews(url):
+#     # Initialize the ApifyClient with your API token
+#     client = ApifyClient(APIFY_TOKEN)
+
+#     # Prepare the Actor input
+#     run_input = {
+#         "startUrls": [{"url": url}],
+#         "maxReviews": 50,
+#         "reviewsSort": "newest",
+#         "language": "en",
+#         "personalData": True,
+#     }
+
+#     # Run the Actor and wait for it to finish
+#     run = client.actor("Xb8osYTtOjlsgI6k9").call(run_input=run_input)
+
+#     # Fetch and print Actor results from the run's dataset (if there are any)
+#     for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+#         print(item)
 
 
 def analyze_review(review):
@@ -382,48 +407,48 @@ def analyze_review(review):
     sentiment = (
         good_neutral_bad_mappings[sentiment.lower()]
         if sentiment.lower() in good_neutral_bad_mappings
-        else ""
+        else "neutral"
     )
     emotion = emotion.lower()
     quality_of_food_beverage = (
         yes_no_mappings[quality_of_food_beverage.lower()]
         if quality_of_food_beverage.lower() in yes_no_mappings
-        else ""
+        else "no"
     )
     value_for_money = (
         yes_no_mappings[value_for_money.lower()]
         if value_for_money.lower() in yes_no_mappings
-        else ""
+        else "no"
     )
     customer_service = (
         yes_no_mappings[customer_service.lower()]
         if customer_service.lower() in yes_no_mappings
-        else ""
+        else "no"
     )
     safety_and_hygiene = (
         yes_no_mappings[safety_and_hygiene.lower()]
         if safety_and_hygiene.lower() in yes_no_mappings
-        else ""
+        else "no"
     )
     loyalty_and_rewards = (
         yes_no_mappings[loyalty_and_rewards.lower()]
         if loyalty_and_rewards.lower() in yes_no_mappings
-        else ""
+        else "no"
     )
     accessibility_and_convenience = (
         yes_no_mappings[accessibility_and_convenience.lower()]
         if accessibility_and_convenience.lower() in yes_no_mappings
-        else ""
+        else "no"
     )
     social_responsibility = (
         yes_no_mappings[social_responsibility.lower()]
         if social_responsibility.lower() in yes_no_mappings
-        else ""
+        else "no"
     )
     brand_love = (
         yes_no_mappings[brand_love.lower()]
         if brand_love.lower() in yes_no_mappings
-        else ""
+        else "no"
     )
 
     return {
@@ -438,6 +463,83 @@ def analyze_review(review):
         "social_responsibility": social_responsibility,
         "brand_love": brand_love,
     }
+
+
+# def analyze_reviews():
+#     summary = {
+#         "sentiment": {
+#             "good": 0,
+#             "bad": 0,
+#             "neutral": 0,
+#         },
+#         "emotion": {
+#             "happy": 0,
+#             "angry": 0,
+#             "disappointed": 0,
+#             "sad": 0,
+#             "neutral": 0,
+#         },
+#         "tags": {},
+#         "wordCloud": {},
+#     }
+#     with conn.cursor() as cur:
+#         cur.execute("SELECT * FROM review")
+#         reviews = cur.fetchall()
+#         for row in reviews:
+#             id = row[0]
+#             sentiment = row[1]
+#             emotion = row[2]
+#             name = row[4]
+#             text = row[5]
+#             score = row[6]
+#             stars = row[7]
+#             date = row[8]
+#             tags = row[9]
+
+#             if sentiment in summary["sentiment"]:
+#                 summary["sentiment"][sentiment] += 1
+#             else:
+#                 summary["sentiment"]["neutral"] += 1
+
+#             if emotion in summary["emotion"]:
+#                 summary["emotion"][emotion] += 1
+#             else:
+#                 summary["emotion"]["neutral"] += 1
+
+#             for tag in tags:
+#                 if tag in summary["tags"]:
+#                     summary["tags"][tag] += 1
+#                 else:
+#                     summary["tags"][tag] = 1
+
+#             words = text.split(" ")
+#             for word in words:
+#                 word = word.lower().replace(",", "").replace(".", "")
+#                 if len(word) > 3:
+#                     if word in summary["wordCloud"]:
+#                         summary["wordCloud"][word] += 1
+#                     else:
+#                         summary["wordCloud"][word] = 1
+
+#     prompt = (
+#         """
+#     These are customer reviews about a restaurant chain with their analysis, delimited by ###
+#     ###
+#     %s
+#     ###
+
+#     Act like a data analyst and follow the instructions below:
+#     - Give an insights of how the resturant chain can improve in  // improvement
+
+#     Please reply in English and output as JSON object using the following format:
+#     {
+#       "insights1": ""
+#     }
+#     """
+#         % text
+#     )
+
+#     return JSONResponse(content=summary)
 
 
 def main():
