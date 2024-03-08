@@ -186,6 +186,7 @@ if st.button('Analyze!'):
     }   
     with st.spinner("Analyzing..."):
         response = requests.post(f"http://{API_URL}/analyze", json=payloadDict,headers=headers)
+        time.sleep(4)
     # reviewData = getJsonData()
     # if reviewData is None:
     #     st.error("Missing JSON data. Please upload one to begin.") 
