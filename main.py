@@ -51,7 +51,7 @@ async def analyze(req: Request):
         reviews = data["reviews"]
 
     for review in reviews:
-        key = data["url"] + str(review["text"])
+        key = "review_" + data["url"] + str(review["text"])
 
         if not review["text"]:
             print(f"Skippped: {count}")
@@ -177,7 +177,7 @@ async def clear():
 
 def scrape_reviews(url, num_reviews=10):
     print("scrapping reviews...")
-    key = url + "_" + str(num_reviews)
+    key = "scrape_reviews_" + url + "_" + str(num_reviews)
     if key in CACHE:
         return CACHE[key]
 
