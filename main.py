@@ -39,8 +39,9 @@ conn = psycopg2.connect(
 @app.post("/analyze")
 async def analyze(req: Request):
     await clear()
-
+    count = 0
     data = await req.json()
+    print(f"received {len(data['reviews'])} reviews for industry: {data['industry']}")
 
     industry = data["industry"]
     if "url" in data:
@@ -50,6 +51,8 @@ async def analyze(req: Request):
 
     for review in reviews:
         if not review["text"]:
+            print(f"Skippped: {count}")
+            count += 1
             continue
 
         # prompt
@@ -64,9 +67,11 @@ async def analyze(req: Request):
         social_responsibility = ""
         brand_love = ""
         try:
+            print(f"Processing: {count}...")
             results = analyze_review(industry, review)
             if results is not None:
-                print(results)
+                print(f"Completed: {count}...")
+                # print(results)
                 sentiment = results["sentiment"]
                 emotion = results["emotion"]
                 quality_of_food_beverage = results["quality_of_food_beverage"]
@@ -77,14 +82,17 @@ async def analyze(req: Request):
                 accessibility_and_convenience = results["accessibility_and_convenience"]
                 social_responsibility = results["social_responsibility"]
                 brand_love = results["brand_love"]
+                count += 1
         except Exception as ex:
+            print(f"Failed: {count}...")
             print(ex)
+            count += 1
             pass
 
         text = review["text"]
         score = review["totalScore"]
         stars = review["stars"]
-        date = datetime.fromisoformat(review["publishedAtDate"])
+        date = datetime.fromisoformat(review["publishedAtDate"][:-1])
         gender = ""
         name = review["name"]
         tags = []
@@ -128,7 +136,8 @@ async def analyze(req: Request):
             )
             conn.commit()
 
-    return analyze_reviews()
+    # return analyze_reviews()
+    return "ok"
 
 
 # test health
@@ -156,6 +165,7 @@ async def clear():
     with conn.cursor() as cur:
         cur.execute("DELETE FROM review")
         conn.commit()
+        return "cleared!"
 
 
 def scrape_reviews(url, num_reviews=10):
@@ -192,7 +202,7 @@ def analyze_review(industry, review):
     if not review["text"]:
         return None
 
-    print("Analyzing:\n" + review["text"] + "...")
+    # print("Analyzing:\n" + review["text"] + "...")
 
     text = review["text"]
 
