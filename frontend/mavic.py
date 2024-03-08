@@ -23,7 +23,7 @@ def getJsonData():
         return jsonData
 
 
-st.title("Mavic: Where Data Meets Strategy.")
+st.title("GenieSpark: Your AI shopping assistant.")
 
 color_cycle = cycle(px.colors.qualitative.Plotly)
 
@@ -147,9 +147,38 @@ option = st.selectbox(
     placeholder="Choose an Industry",
 )
 
-st.write(option)
+# st.write(option)
 
 
+if jsonData is not None:
+    number = st.number_input("Choose number of reviews to analyze", value=len(jsonData), placeholder="Number of reviews")
+
+
+if st.button('Analyze!'):
+    reviewData = getJsonData()
+    if reviewData is None:
+        st.error("Missing JSON data. Please upload one to begin.") 
+        st.stop()
+    headers = {'Content-type': 'application/json'}
+    
+    payloadDict = {
+        "category": option,
+        "reviews": jsonData[:number],
+    }   
+
+    # convert into JSON:
+    payloadJson = json.dumps(payloadDict)
+
+    with st.spinner("Analyzing..."):
+        # response = requests.post(f"http://{API_URL}/testReviewPayload", json=reviewData[:number],headers=headers) 
+        response = requests.post(f"http://{API_URL}/analyze", json=payloadDict,headers=headers)
+
+
+if st.button('Get insights!'):
+    response = requests.get(f"http://{API_URL}/summary") 
+    st.write(response.json())
+    # df_reviews = reviews_to_dataframe(response['sentiment'])
+    # st.write(f"sentiment: {df_reviews}")
 
 
 if st.button("Generate Insights"):
@@ -191,16 +220,9 @@ st.divider()
 st.write('Developers Only')
 if st.button('Test /ping'):
     response = requests.get(f"http://{API_URL}/ping") 
-    st.write(f"server said: {response.json()}")
+    st.write(f"server: {response.json()}")
 
 
-number = st.number_input("Choose number of reviews to analyze", value=1, placeholder="Number of reviews")
-if st.button('Test send server'):
-    reviewData = getJsonData()
-    if reviewData is None:
-        st.error("Missing JSON data. Please upload one to begin.") 
-        st.stop()
-    headers = {'Content-type': 'application/json'}
-    response = requests.post(f"http://{API_URL}/testReviewPayload", json=reviewData[:number],headers=headers) 
-    if response.json():
-        st.write(f"server said: {response.json()}")
+if st.button('Clear!'):
+    response = requests.post(f"http://{API_URL}/clear")
+    st.write(f"server: {response.json()}")
