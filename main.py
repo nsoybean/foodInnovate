@@ -1,4 +1,4 @@
-# from apify_client import ApifyClient
+from apify_client import ApifyClient
 from datetime import datetime
 import json
 import psycopg2
@@ -7,7 +7,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 
-# APIFY_TOKEN = "apify_api_ATqx4ubArj7TF3UW4HaH9hiFy60bVu30MP9K"
+APIFY_TOKEN = "apify_api_ATqx4ubArj7TF3UW4HaH9hiFy60bVu30MP9K"
+APIFY_CACHE = {}
 
 DB_USER = "mavic"
 DB_PASSWORD = "UugwZLn73i3X"
@@ -15,21 +16,13 @@ DB_HOST = "gp-gs5zw2z27av4l87kuo-master.gpdbmaster.singapore.rds.aliyuncs.com"
 DB_PORT = 5432
 DB_DATABASE = "mavic"
 
-# qwen 1.7B
+# qwen 1.7B chat
 PAI_HOST = "http://quickstart-20240307-w5py.5531209519297534.ap-southeast-1.pai-eas.aliyuncs.com/"
 PAI_TOKEN = "NGUxOGFhODhmMGIyOTZiNzkzNWUzNzE2MzQzNzk5OWMwMGViYzY2NA=="
 
-# llama2 7B
-# PAI_HOST = "http://quickstart-20240307-mryp.5531209519297534.ap-southeast-1.pai-eas.aliyuncs.com/"
-# PAI_TOKEN = "YzkwYzRjNWNmOWNjYjRlMmVkMjI4MGZmZjJiOGE1MzM0ZjIyYmVmYQ=="
-
-# chatglm2 6B
-# PAI_HOST = "http://quickstart-20240307-g5b5.5531209519297534.vpc.ap-southeast-1.pai-eas.aliyuncs.com/"
-# PAI_TOKEN = "YmMzOTM2M2E4NzdmYTIyZTFlYjgzZDQ4MzZlYTk3YTFiMDRlZjEwNQ=="
-
-# baichuan2 7B (chat)
-# PAI_HOST = "http://quickstart-20240307-vzki.5531209519297534.vpc.ap-southeast-1.pai-eas.aliyuncs.com/"
-# PAI_TOKEN = "MDQ4YmQ4YTA5ODQxODQ3NDljNjFlNDRjMDRkNGQyNDFmMTFiZjBiZQ=="
+# qwen 7B chat
+# PAI_HOST = "http://quickstart-20240308-sh2b.5531209519297534.ap-southeast-1.pai-eas.aliyuncs.com/"
+# PAI_TOKEN = "ZGFmOTVmYzZhYzk5MmFjZDEyNGZiMmNkMTkyNWMxYjA5YjliMzJlMw=="
 
 
 app = FastAPI()
@@ -45,12 +38,15 @@ conn = psycopg2.connect(
 
 @app.post("/analyze")
 async def analyze(req: Request):
-    clear()
+    await clear()
 
     data = await req.json()
 
     industry = data["industry"]
-    reviews = data["reviews"]
+    if "url" in data:
+        reviews = scrape_reviews(data["url"])
+    else:
+        reviews = data["reviews"]
 
     for review in reviews:
         if not review["text"]:
@@ -216,25 +212,34 @@ async def clear():
         conn.commit()
 
 
-# def scrape_reviews(url):
-#     # Initialize the ApifyClient with your API token
-#     client = ApifyClient(APIFY_TOKEN)
+def scrape_reviews(url, num_reviews=10):
+    key = url + "_" + str(num_reviews)
+    if key in APIFY_CACHE:
+        return APIFY_CACHE[key]
 
-#     # Prepare the Actor input
-#     run_input = {
-#         "startUrls": [{"url": url}],
-#         "maxReviews": 50,
-#         "reviewsSort": "newest",
-#         "language": "en",
-#         "personalData": True,
-#     }
+    # Initialize the ApifyClient with your API token
+    client = ApifyClient(APIFY_TOKEN)
 
-#     # Run the Actor and wait for it to finish
-#     run = client.actor("Xb8osYTtOjlsgI6k9").call(run_input=run_input)
+    # Prepare the Actor input
+    run_input = {
+        "startUrls": [{"url": url}],
+        "maxReviews": num_reviews,
+        "reviewsSort": "newest",
+        "language": "en",
+        "personalData": True,
+    }
 
-#     # Fetch and print Actor results from the run's dataset (if there are any)
-#     for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-#         print(item)
+    # Run the Actor and wait for it to finish
+    run = client.actor("Xb8osYTtOjlsgI6k9").call(run_input=run_input)
+
+    # Fetch and print Actor results from the run's dataset (if there are any)
+    items = []
+    for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+        items.append(item)
+
+    APIFY_CACHE[key] = items
+
+    return items
 
 
 def analyze_review(review):
@@ -301,6 +306,7 @@ def analyze_review(review):
     start = response.find("{")
     end = response.find("}")
     response = response[start : end + 1]
+    print(response)
     results = json.loads(response)
 
     yes_no_mappings = {
