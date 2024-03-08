@@ -94,6 +94,7 @@ async def analyze(req: Request):
             print(f"Failed: {count}...")
             print(ex)
             count += 1
+            CACHE[key] = None
             pass
 
         text = review["text"]
@@ -175,7 +176,7 @@ async def clear():
 
 
 def scrape_reviews(url, num_reviews=10):
-    print('scrapping reviews...')
+    print("scrapping reviews...")
     key = url + "_" + str(num_reviews)
     if key in CACHE:
         return CACHE[key]
