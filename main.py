@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 
 APIFY_TOKEN = "apify_api_ATqx4ubArj7TF3UW4HaH9hiFy60bVu30MP9K"
-APIFY_CACHE = {}
+CACHE = {}
 
 DB_USER = "mavic"
 DB_PASSWORD = "UugwZLn73i3X"
@@ -51,6 +51,8 @@ async def analyze(req: Request):
         reviews = data["reviews"]
 
     for review in reviews:
+        key = data["url"] + str(review["text"])
+
         if not review["text"]:
             print(f"Skippped: {count}")
             count += 1
@@ -69,7 +71,11 @@ async def analyze(req: Request):
         brand_love = ""
         try:
             print(f"Processing: {count}...")
-            results = analyze_review(industry, review)
+            if key in CACHE:
+                results = CACHE[key]
+            else:
+                results = analyze_review(industry, review)
+                CACHE[key] = results
             if results is not None:
                 print(f"Completed: {count}...")
                 # print(results)
@@ -137,7 +143,6 @@ async def analyze(req: Request):
             )
             conn.commit()
 
-    # return analyze_reviews()
     return "ok"
 
 
@@ -171,8 +176,8 @@ async def clear():
 
 def scrape_reviews(url, num_reviews=10):
     key = url + "_" + str(num_reviews)
-    if key in APIFY_CACHE:
-        return APIFY_CACHE[key]
+    if key in CACHE:
+        return CACHE[key]
 
     # Initialize the ApifyClient with your API token
     client = ApifyClient(APIFY_TOKEN)
@@ -194,7 +199,7 @@ def scrape_reviews(url, num_reviews=10):
     for item in client.dataset(run["defaultDatasetId"]).iterate_items():
         items.append(item)
 
-    APIFY_CACHE[key] = items
+    CACHE[key] = items
 
     return items
 

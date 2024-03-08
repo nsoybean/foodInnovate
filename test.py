@@ -5,19 +5,20 @@ import json
 with open("reviews.json") as f:
     reviews = json.load(f)
 
-resp = requests.post(
-    "http://localhost:8000/analyze",
-    json={"industry": "F&B", "reviews": reviews[0:5]},
-)
-print(resp.json())
-
-# requests.post(
+# resp = requests.post(
 #     "http://localhost:8000/analyze",
-#     json={
-#         "industry": "F&B",
-#         "url": "https://www.google.com/maps/place/Priv%C3%A9+Katong/@1.3005026,103.8411422,13.58z/data=!3m1!5s0x31da1873ad5fdb95:0xae0dd676fccd02ed!4m10!1m2!2m1!1zUHJpdsOp!3m6!1s0x31da19d1eb803f75:0x600404a326e4b674!8m2!3d1.3052002!4d103.9050645!15sCgZQcml2w6laCCIGcHJpdsOpkgEKcmVzdGF1cmFudOABAA!16s%2Fg%2F11rp41p_4d?entry=ttu",
-#     },
+#     json={"industry": "F&B", "reviews": reviews[0:5]},
 # )
+# print(resp.json())
+
+requests.post(
+    "http://localhost:8000/analyze",
+    json={
+        "industry": "F&B",
+        "url": "https://www.google.com/maps/place/Priv%C3%A9+Katong/@1.3005026,103.8411422,13.58z/data=!3m1!5s0x31da1873ad5fdb95:0xae0dd676fccd02ed!4m10!1m2!2m1!1zUHJpdsOp!3m6!1s0x31da19d1eb803f75:0x600404a326e4b674!8m2!3d1.3052002!4d103.9050645!15sCgZQcml2w6laCCIGcHJpdsOpkgEKcmVzdGF1cmFudOABAA!16s%2Fg%2F11rp41p_4d?entry=ttu",
+        "num_reviews": 5,
+    },
+)
 
 # resp = requests.get("http://localhost:8000/summary")
 # print(resp.json())
