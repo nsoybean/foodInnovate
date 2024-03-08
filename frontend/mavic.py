@@ -99,17 +99,22 @@ def plot_metric_distribution(df, column_name, chart_title):
     
     # Convert the dictionary into a DataFrame
     data_df = pd.DataFrame(list(df.items()), columns=[column_name, "Counts"])
+    
+    # pie chart
+    pieChart = px.pie( data_df, values='Counts', names=column_name, hole=.3, title=chart_title)
+    return pieChart
+    # st.plotly_chart(pieChart, use_container_width=True)
     # Use Plotly Express to create the bar chart
-    fig = px.bar(
-        data_df,
-        x=column_name,
-        y="Counts",
-        title=chart_title,
-        labels={"Counts": "Counts", column_name: column_name},
-        color=column_name,
-        barmode="group",
-    )
-    fig.update_layout(xaxis_title=column_name, yaxis_title="Counts")
+    # fig = px.bar(
+    #     data_df,
+    #     x=column_name,
+    #     y="Counts",
+    #     title=chart_title,
+    #     labels={"Counts": "Counts", column_name: column_name},
+    #     color=column_name,
+    #     barmode="group",
+    # )
+    # fig.update_layout(xaxis_title=column_name, yaxis_title="Counts")
     return fig  # Ensure this function returns a Plotly Figure object
 
 def display_qualitative_insights(prompt_response):
@@ -202,7 +207,7 @@ if st.button("Generate Insights"):
         with st.spinner("Generating insights..."):
             # api call
             response = requests.get(f"http://{API_URL}/summary") 
-            st.write(response.json())
+            # st.write(response.json())
 
             tab1, tab2 = st.tabs(["Quantitative Data", "Qualitative Insights"])
             with tab1:
@@ -221,12 +226,14 @@ if st.button("Generate Insights"):
 
 
 st.divider()
-st.write('Developers Only')
-if st.button('Test /ping'):
-    response = requests.get(f"http://{API_URL}/ping") 
-    st.write(f"server: {response.json()}")
+devOn = st.toggle('dev', False)
+if devOn:
+    st.write('Developers Only')
+    if st.button('Test /ping'):
+        response = requests.get(f"http://{API_URL}/ping") 
+        st.write(f"server: {response.json()}")
 
 
-if st.button('Clear!'):
-    response = requests.post(f"http://{API_URL}/clear")
-    st.write(f"server: {response.json()}")
+    if st.button('Clear!'):
+        response = requests.post(f"http://{API_URL}/clear")
+        st.write(f"server: {response.json()}")
