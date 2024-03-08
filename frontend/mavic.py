@@ -143,21 +143,25 @@ def display_qualitative_insights(prompt_response):
     )
     st.markdown(formatted_markdown)
 
+# approach 1: upload file
+# uploaded_file = st.file_uploader("Choose a file")
 
-uploaded_file = st.file_uploader("Choose a file")
+# if uploaded_file is not None:
+#     try:
+#         # Read JSON file
+#         jsonData = json.load(uploaded_file)
+#         on = st.toggle('Preview JSON data', False)
+#         if on:
+#             if uploaded_file is not None:
+#                 st.write(jsonData[0])
+#     except json.JSONDecodeError:
+#         st.error("Invalid JSON file. Please upload a valid JSON file.")
 
-if uploaded_file is not None:
-    try:
-        # Read JSON file
-        jsonData = json.load(uploaded_file)
-        on = st.toggle('Preview JSON data', False)
-        if on:
-            if uploaded_file is not None:
-                st.write(jsonData[0])
-    except json.JSONDecodeError:
-        st.error("Invalid JSON file. Please upload a valid JSON file.")
-
-
+# approach 2: url
+input_url = st.text_input("Input url")
+if input_url is not None:
+    number = st.number_input("Choose number of reviews to analyze", value=10, placeholder="Number of reviews")
+    
 industry_options = ("F&B", "E-commerce")
 option = st.selectbox(
     "Industry",
@@ -169,28 +173,33 @@ option = st.selectbox(
 # st.write(option)
 
 
-if jsonData is not None:
-    number = st.number_input("Choose number of reviews to analyze", value=len(jsonData), placeholder="Number of reviews")
+# if jsonData is not None:
+#     number = st.number_input("Choose number of reviews to analyze", value=len(jsonData), placeholder="Number of reviews")
 
 
 if st.button('Analyze!'):
-    reviewData = getJsonData()
-    if reviewData is None:
-        st.error("Missing JSON data. Please upload one to begin.") 
-        st.stop()
     headers = {'Content-type': 'application/json'}
-    
     payloadDict = {
         "industry": option,
-        "reviews": jsonData[:number],
+        "url": input_url,
+        "num_reviews": number
     }   
-
-    # convert into JSON:
-    payloadJson = json.dumps(payloadDict)
-
     with st.spinner("Analyzing..."):
-        # response = requests.post(f"http://{API_URL}/testReviewPayload", json=reviewData[:number],headers=headers) 
         response = requests.post(f"http://{API_URL}/analyze", json=payloadDict,headers=headers)
+    # reviewData = getJsonData()
+    # if reviewData is None:
+    #     st.error("Missing JSON data. Please upload one to begin.") 
+    #     st.stop()
+    # headers = {'Content-type': 'application/json'}
+    
+    # payloadDict = {
+    #     "industry": option,
+    #     "reviews": jsonData[:number],
+    # }   
+
+    # with st.spinner("Analyzing..."):
+    #     # response = requests.post(f"http://{API_URL}/testReviewPayload", json=reviewData[:number],headers=headers) 
+    #     response = requests.post(f"http://{API_URL}/analyze", json=payloadDict,headers=headers)
 
 
 # if st.button('Get insights!'):
@@ -201,10 +210,28 @@ if st.button('Analyze!'):
 
 
 if st.button("Generate Insights"):
-    if uploaded_file is None and option not in industry_options:
-        st.warning("Please upload a file or select an industry to continue.")
-    else:
-        with st.spinner("Generating insights..."):
+    # if uploaded_file is None and option not in industry_options:
+    #     st.warning("Please upload a file or select an industry to continue.")
+    # else:
+    #     with st.spinner("Generating insights..."):
+    #         # api call
+    #         response = requests.get(f"http://{API_URL}/summary") 
+    #         # st.write(response.json())
+
+    #         tab1, tab2 = st.tabs(["Quantitative Data", "Qualitative Insights"])
+    #         with tab1:
+    #             # Iterate over all keys in random_data to generate charts
+    #             for column, data_dict in response.json()['summary'].items():
+    #                 chart_title = f"{column.capitalize()} Distribution"
+    #                 # Generate and display plot for each attribute
+    #                 fig = plot_metric_distribution(
+    #                     data_dict, column.capitalize(), chart_title
+    #                 )
+    #                 st.plotly_chart(fig, use_container_width=True)
+
+    #         with tab2:
+    #             st.markdown(response.json()['insights'])
+    with st.spinner("Generating insights..."):
             # api call
             response = requests.get(f"http://{API_URL}/summary") 
             # st.write(response.json())

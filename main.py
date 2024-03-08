@@ -41,7 +41,7 @@ async def analyze(req: Request):
     await clear()
     count = 0
     data = await req.json()
-    print(f"received {len(data['reviews'])} reviews for industry: {data['industry']}")
+    # print(f"received {len(data['reviews'])} reviews for industry: {data['industry']}")
 
     industry = data["industry"]
     if "url" in data:
@@ -175,6 +175,7 @@ async def clear():
 
 
 def scrape_reviews(url, num_reviews=10):
+    print('scrapping reviews...')
     key = url + "_" + str(num_reviews)
     if key in CACHE:
         return CACHE[key]
